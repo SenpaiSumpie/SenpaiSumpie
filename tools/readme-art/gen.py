@@ -32,8 +32,8 @@ FONT_URLS = {
 }
 
 INK = "#0E0A1A"
-SURF_TOP = "#231839"
-SURF_BOTTOM = "#171028"
+SURFACE = "#1A1428"
+BORDER = "#30263F"
 WELL = "#130D20"
 DUSK = "#2A1740"
 RAISED = "#2B1F42"
@@ -91,33 +91,18 @@ BODY = Face("InstrumentSans.ttf", wght=450, wdth=100)
 BODY_B = Face("InstrumentSans.ttf", wght=600, wdth=100)
 
 
-def speckle(seed, w, h, count, top=0):
-    """A faint scatter of stars so panels share the header's night sky."""
-    rng = random.Random(seed)
-    return "".join(
-        f'<circle cx="{rng.uniform(6, w - 6):.0f}" cy="{rng.uniform(top + 6, h - 6):.0f}" r="{rng.choice([.5, .6, .8])}" fill="#fff" opacity="{rng.uniform(.05, .16):.2f}"/>'
-        for _ in range(count)
-    )
-
-
-def panel(w, h, label, css, defs, body, rx=12, stars=None):
-    """The shared surface: graded fill, lit top-left edge, faint star texture."""
-    texture = speckle(stars, w, h, max(6, w * h // 3600)) if stars is not None else ""
+def panel(w, h, label, css, defs, body, rx=10):
+    """The shared surface: a flat fill with a single hairline border."""
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{html.escape(label)}">
 <style>
 {css}
 {REDUCED}
 </style>
-<defs>
-<clipPath id="frame"><rect width="{w}" height="{h}" rx="{rx}"/></clipPath>
-<linearGradient id="surf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{SURF_TOP}"/><stop offset="1" stop-color="{SURF_BOTTOM}"/></linearGradient>
-<linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9B8FF" stop-opacity=".55"/><stop offset=".3" stop-color="{HAIR}"/><stop offset="1" stop-color="#1D1430"/></linearGradient>
-{defs}</defs>
+<defs><clipPath id="frame"><rect width="{w}" height="{h}" rx="{rx}"/></clipPath>{defs}</defs>
 <g clip-path="url(#frame)">
-<rect width="{w}" height="{h}" fill="url(#surf)"/>
-{texture}
+<rect width="{w}" height="{h}" fill="{SURFACE}"/>
 {body}
-<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="{rx - .5}" fill="none" stroke="url(#edge)"/>
+<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="{rx - .5}" fill="none" stroke="{BORDER}"/>
 </g>
 </svg>
 """
@@ -248,11 +233,11 @@ def tab(title):
     defs = f'<linearGradient id="pulse" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{PINK}" stop-opacity="0"/><stop offset="1" stop-color="{PINK}"/></linearGradient>'
     body = (
         DISPLAY.path(title, 20, 33.5, 18.5, TEXT, track=0.1)
-        + f'<rect x="{x0:.0f}" y="26.5" width="{x1 - x0:.0f}" height="1" fill="{HAIR}"/>'
+        + f'<rect x="{x0:.0f}" y="26.5" width="{x1 - x0:.0f}" height="1" fill="{BORDER}"/>'
         + f'<rect class="run" x="{x0:.0f}" y="26" width="30" height="2" rx="1" fill="url(#pulse)"/>'
-        + f'<circle cx="{x1}" cy="27" r="5" fill="{PINK}" opacity=".22"/><circle cx="{x1}" cy="27" r="2.6" fill="{PINK}"/>'
+        + f'<circle cx="{x1}" cy="27" r="2.6" fill="{PINK}"/>'
     )
-    return panel(W, H, title, css, defs, body, rx=11)
+    return panel(W, H, title, css, defs, body, rx=8)
 
 
 # --- focus tiles ------------------------------------------------------------
@@ -295,7 +280,7 @@ def glyph_indie(c):
     return css, art
 
 
-def tile(title, text, glyph, accent, seed):
+def tile(title, text, glyph, accent):
     W, H = 410, 142
     css, art = glyph(accent)
     room = W - 104 - 20
@@ -303,14 +288,12 @@ def tile(title, text, glyph, accent, seed):
     while DISPLAY.width(title, size, 0.1) > room:
         size -= 0.25
     lines = BODY.wrap(text, 15.5, room)
-    defs = f'<radialGradient id="tint" cx="52" cy="52" r="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="{accent}" stop-opacity=".3"/><stop offset="1" stop-color="{accent}" stop-opacity="0"/></radialGradient>'
     body = (
-        f'<g transform="translate(0,19)"><rect x="20" y="20" width="64" height="64" rx="11" fill="{WELL}"/>'
-        f'<rect x="20" y="20" width="64" height="64" rx="11" fill="url(#tint)" stroke="{accent}" stroke-opacity=".4"/>{art}</g>'
+        f'<g transform="translate(0,19)"><rect x="20" y="20" width="64" height="64" rx="10" fill="{WELL}" stroke="{BORDER}"/>{art}</g>'
         + DISPLAY.path(title, 104, 45, size, TEXT, track=0.1)
         + "".join(BODY.path(l, 104, 72 + i * 22.5, 15.5, BODY_INK) for i, l in enumerate(lines))
     )
-    return panel(W, H, f"{title}: {text}", css, defs, body, stars=seed)
+    return panel(W, H, f"{title}: {text}", css, "", body)
 
 
 # --- engineering highlights -------------------------------------------------
@@ -351,14 +334,13 @@ def glyph_tenants(c):
     return css, lock + boxes
 
 
-def highlight(title, points, glyph, accent, seed, height):
+def highlight(title, points, glyph, accent, height):
     W = 270
     css, art = glyph(accent)
     room = W - 40
     size = 15.0
     while DISPLAY.width(title, size, 0.1) > room:
         size -= 0.25
-    defs = f'<radialGradient id="tint" cx="43" cy="43" r="34" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="{accent}" stop-opacity=".3"/><stop offset="1" stop-color="{accent}" stop-opacity="0"/></radialGradient>'
     rows, y = "", 122
     for point in points:
         for i, line in enumerate(BODY.wrap(point, 15, room - 16)):
@@ -368,12 +350,11 @@ def highlight(title, points, glyph, accent, seed, height):
             y += 21
         y += 5
     body = (
-        f'<rect x="20" y="20" width="46" height="46" rx="10" fill="{WELL}"/>'
-        f'<rect x="20" y="20" width="46" height="46" rx="10" fill="url(#tint)" stroke="{accent}" stroke-opacity=".4"/>'
+        f'<rect x="20" y="20" width="46" height="46" rx="9" fill="{WELL}" stroke="{BORDER}"/>'
         f'<g transform="translate(5.56,5.56) scale(.72)">{art}</g>'
         + DISPLAY.path(title, 20, 95, size, TEXT, track=0.1) + rows
     )
-    return panel(W, height or int(y + 8), f"{title}: {'; '.join(points)}", css, defs, body, stars=seed), int(y + 8)
+    return panel(W, height or int(y + 8), f"{title}: {'; '.join(points)}", css, "", body), int(y + 8)
 
 
 # --- project cards ----------------------------------------------------------
@@ -383,26 +364,21 @@ def highlight(title, points, glyph, accent, seed, height):
 STRIP, SCENE = 36, 104
 
 
-def card(title, category, descriptor, desc, art, status, live=False, link=None, seed=0):
+def card(title, category, descriptor, desc, art, status, live=False, link=None):
     W, H = 410, 384
     css, defs, scene = art
     top = STRIP + SCENE
     lines = BODY.wrap(desc, 16.5, W - 48)
     assert len(lines) <= 3, (title, lines)
     css = ".dot{animation:dot 2.6s ease-in-out infinite}@keyframes dot{50%{opacity:.3}}\n" + css
-    defs += (
-        f'<clipPath id="band"><rect width="{W}" height="{SCENE}"/></clipPath>'
-        f'<linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".6" stop-color="#1F1533" stop-opacity="0"/><stop offset="1" stop-color="#1F1533" stop-opacity=".92"/></linearGradient>'
-    )
+    defs += f'<clipPath id="band"><rect width="{W}" height="{SCENE}"/></clipPath>'
     dot = CYAN if live else PINK
     body = (
-        f'<rect width="{W}" height="{STRIP}" fill="{WELL}"/>'
-        f'<circle cx="27" cy="18" r="7" fill="{dot}" opacity=".2"/><circle class="dot" cx="27" cy="18" r="3.6" fill="{dot}"/>'
+        f'<circle class="dot" cx="27" cy="18" r="3.6" fill="{dot}"/>'
         + BODY_B.path(status, 41, 22.8, 13.5, TEXT)
         + BODY.path(category, W - 24 - BODY.width(category, 13.5), 22.8, 13.5, FAINT)
-        + f'<g transform="translate(0,{STRIP})"><g clip-path="url(#band)">{scene}'
-        f'<rect width="{W}" height="{SCENE}" fill="{VIOLET}" opacity=".07"/><rect width="{W}" height="{SCENE}" fill="url(#fade)"/></g></g>'
-        f'<rect y="{STRIP - .5}" width="{W}" height="1" fill="#000" opacity=".4"/>'
+        + f'<g transform="translate(0,{STRIP})"><g clip-path="url(#band)">{scene}</g></g>'
+        f'<rect y="{STRIP - .5}" width="{W}" height="1" fill="{BORDER}"/><rect y="{top - .5}" width="{W}" height="1" fill="{BORDER}"/>'
         + DISPLAY.path(title, 24, top + 50, 23, TEXT, track=0.2)
         + BODY_B.path(descriptor, 24, top + 76, 15, SOFT)
         + "".join(BODY.path(l, 24, top + 112 + i * 25.5, 16.5, BODY_INK) for i, l in enumerate(lines))
@@ -412,7 +388,7 @@ def card(title, category, descriptor, desc, art, status, live=False, link=None, 
         body += BODY_B.path(link, 24, foot, 15, CYAN)
     else:
         body += BODY.path("Not public yet", 24, foot, 15, FAINT)
-    return panel(W, H, f"{title}, {descriptor}. {status}.", css, defs, body, stars=seed)
+    return panel(W, H, f"{title}, {descriptor}. {status}.", css, defs, body)
 
 
 def trace_art():
@@ -441,13 +417,11 @@ def trace_art():
 @media (prefers-reduced-motion: reduce){{.tr{{stroke-dashoffset:0}}.nd{{fill:{CYAN}}}.hit{{fill:{PINK}}}}}"""
     defs = (
         f'<linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="{VIOLET}"/><stop offset=".75" stop-color="{CYAN}"/><stop offset="1" stop-color="{PINK}"/></linearGradient>'
-        '<filter id="lineglow" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>'
     )
     scene = (
         f'<rect width="410" height="104" fill="{WELL}"/>{dots}'
         f'<path d="{wave}" fill="none" stroke="{VIOLET}" stroke-opacity=".3" stroke-width="1"/>{branches}'
         f'<path d="{d}" fill="none" stroke="{HAIR}" stroke-width="1.6"/>'
-        f'<path class="tr" d="{d}" pathLength="100" fill="none" stroke="url(#tg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#lineglow)" opacity=".8"/>'
         f'<path class="tr" d="{d}" pathLength="100" fill="none" stroke="url(#tg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>{lit}'
         f'<circle class="ring" cx="{ex}" cy="{ey}" r="9"/><circle class="hit" cx="{ex}" cy="{ey}" r="5"/>'
     )
@@ -455,7 +429,7 @@ def trace_art():
 
 
 def reverie_art():
-    """A figure at the lake's edge, seen on a worn tape, with a hand of cards held up."""
+    """A figure at the lake's edge, with a hand of cards held up in front."""
     rng = random.Random(9)
     horizon = 72
     trees = conifers(rng, 0, 410, horizon, 9, 26, half=4.2)
@@ -488,14 +462,11 @@ def reverie_art():
 @keyframes rp{to{transform:translateX(5px)}}
 .lamp{animation:lamp 6.5s ease-in-out infinite}
 @keyframes lamp{0%,100%{opacity:1}46%{opacity:.92}50%{opacity:.45}56%{opacity:.95}}
-.track{animation:track 9s linear infinite}
-@keyframes track{from{transform:translateY(-14px)}to{transform:translateY(112px)}}
-@media (prefers-reduced-motion: reduce){.track{opacity:0}}"""
+"""
     defs = (
         '<linearGradient id="ns" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#150A20"/><stop offset=".68" stop-color="#6A1840"/><stop offset=".7" stop-color="#2C1030"/><stop offset="1" stop-color="#150A1A"/></linearGradient>'
         '<radialGradient id="rg" cx="312" cy="70" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#F0366A" stop-opacity=".6"/><stop offset="1" stop-color="#F0366A" stop-opacity="0"/></radialGradient>'
         '<radialGradient id="mg" cx="96" cy="50" r="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFD9E6" stop-opacity=".4"/><stop offset="1" stop-color="#FFD9E6" stop-opacity="0"/></radialGradient>'
-        '<pattern id="scan" width="4" height="3" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="#000" opacity=".2"/></pattern>'
     )
     scene = (
         '<rect width="410" height="104" fill="url(#ns)"/><rect width="410" height="104" fill="url(#mg)"/>'
@@ -503,7 +474,6 @@ def reverie_art():
         f'<path d="{trees}" fill="#08040C"/><path d="{frame}" fill="#050208"/>{cabin}{figure}{ripples}'
         '<rect class="gl" width="410" height="104" fill="url(#rg)"/>'
         + held(-19, 0) + held(19, 4) + held(0, 2.2, lead=True)
-        + '<rect width="410" height="104" fill="url(#scan)"/><rect class="track" width="410" height="9" fill="#fff" opacity=".07"/>'
     )
     return css, defs, scene
 
@@ -563,13 +533,13 @@ def tech_layout(items, w, top):
     return out, y + PILL_H + 20
 
 
-def tech(title, items, strong, height, seed, note=None):
+def tech(title, items, strong, height, note=None):
     W = 270
     top = 82 if note else 58
     placed, _ = tech_layout(items, W, top)
-    fill, stroke, so = (RAISED, VIOLET, ".75") if strong else ("#1E1530", "#8B6CF0", ".3")
+    fill = "#35285A" if strong else "#261D38"
     pills = "".join(
-        f'<g class="pl" style="animation-delay:{i * .3:.1f}s"><rect x="{x:.0f}" y="{y}" width="{pw:.0f}" height="{PILL_H}" rx="{PILL_H / 2}" fill="{fill}" stroke="{stroke}" stroke-opacity="{so}"/>'
+        f'<g class="pl" style="animation-delay:{i * .3:.1f}s"><rect x="{x:.0f}" y="{y}" width="{pw:.0f}" height="{PILL_H}" rx="{PILL_H / 2}" fill="{fill}"/>'
         + BODY_B.path(name, x + 14, y + 22.6, PILL_SIZE, TEXT) + "</g>"
         for i, (name, x, y, pw) in enumerate(placed)
     )
@@ -578,7 +548,7 @@ def tech(title, items, strong, height, seed, note=None):
     if note:
         body += BODY.path(note, 16, 60, 14.5, FAINT)
     label = f"{title} ({note.lower()}): " if note else f"{title}: "
-    return panel(W, height, label + ", ".join(items), css, "", body, stars=seed)
+    return panel(W, height, label + ", ".join(items), css, "", body)
 
 
 # --- build ------------------------------------------------------------------
@@ -611,34 +581,34 @@ AI_NOTE = "Building experience"
 def build():
     files = {"header": header()}
     files.update({name: tab(title) for name, title in TABS.items()})
-    files.update({name: tile(t, text, g, accent, i) for i, (name, (t, text, g, accent)) in enumerate(TILES.items())})
-    tallest = max(highlight(t, pts, g, a, 0, None)[1] for t, pts, g, a in HIGHLIGHTS.values())
-    for i, (name, (t, pts, g, a)) in enumerate(HIGHLIGHTS.items()):
-        files[name] = highlight(t, pts, g, a, 50 + i, tallest)[0]
+    files.update({name: tile(t, text, g, accent) for name, (t, text, g, accent) in TILES.items()})
+    tallest = max(highlight(t, pts, g, a, None)[1] for t, pts, g, a in HIGHLIGHTS.values())
+    for name, (t, pts, g, a) in HIGHLIGHTS.items():
+        files[name] = highlight(t, pts, g, a, tallest)[0]
     files["card-trace"] = card(
         "TRACE", "Developer tool", "AI engineering intelligence platform",
         "Investigates software issues with evidence from the repository. Planned: code search and GitHub integration.",
-        trace_art(), "In development", seed=31)
+        trace_art(), "In development")
     files["card-reverie"] = card(
         "Reverie of Fear", "Game", "Co-op horror deck-builder",
         "An original game I'm developing. Up to five players face a Slasher that runs itself.",
-        reverie_art(), "In development", link="reverieoffear.com", seed=32)
+        reverie_art(), "In development", link="reverieoffear.com")
     files["card-registry"] = card(
         "Imperial Deck Registry", "Web app", "Deck building for Star Wars: Unlimited",
         "A deck registry for the card game's players, built with Next.js, TypeScript, PostgreSQL and Prisma.",
-        registry_art(), "Live", live=True, link="imperialdeckregistry.com", seed=33)
+        registry_art(), "Live", live=True, link="imperialdeckregistry.com")
     files["card-noir"] = card(
         "Noir", "Editor theme", "Black-and-white theme for VS Code",
         "Uses color only where it matters. Published on the VS Code Marketplace.",
-        noir_art(), "Published", live=True, link="github.com/SenpaiSumpie/Noir", seed=34)
+        noir_art(), "Published", live=True, link="github.com/SenpaiSumpie/Noir")
     panels = [
         ("tech-primary", "Primary stack", PRIMARY, True, None),
         ("tech-additional", "Additional experience", ADDITIONAL, False, None),
         ("tech-ai", "AI engineering", AI, False, AI_NOTE),
     ]
     tech_h = max(tech_layout(items, 270, 82 if note else 58)[1] for _, _, items, _, note in panels)
-    for i, (name, title, items, strong, note) in enumerate(panels):
-        files[name] = tech(title, items, strong, tech_h, 40 + i, note)
+    for name, title, items, strong, note in panels:
+        files[name] = tech(title, items, strong, tech_h, note)
 
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*.svg"):
