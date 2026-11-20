@@ -6,7 +6,7 @@ I build reliable software that makes complicated problems easier to solve. Profe
 
 Outside of work, I build independent products and explore AI-assisted engineering, interactive systems, and game development.
 
-**[Portfolio](https://maxmosier.com) · [LinkedIn](https://www.linkedin.com/in/max-mosier/) · [Email](mailto:max.lee.mosier@gmail.com)**
+**[Portfolio](https://maxmosier.com) · [LinkedIn](https://www.linkedin.com/in/max-mosier/)**
 
 ## What I work on
 
@@ -27,10 +27,7 @@ A platform concept for understanding repositories, investigating software issues
 
 A cooperative deck-builder where 1–5 players take on 80s slasher archetypes against a Slasher that runs itself. Built as a Godot client on top of a TypeScript rules engine and a multiplayer game server with a utility-AI opponent.
 
-### Rift Trader
-*In development · Forecasting research*
-
-A research platform for forecasting prediction markets, limited to paper trading. Every forecast and decision is recorded so results can be audited afterwards. Built with .NET, PostgreSQL, a React dashboard, and a Python research package.
+[reverieoffear.com](https://reverieoffear.com)
 
 ## Technologies
 
