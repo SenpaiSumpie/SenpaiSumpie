@@ -8,9 +8,7 @@ Outside of work, I build independent products and explore AI-assisted engineerin
 
 ## <img src="assets/readme/tab-highlights.svg" width="410" alt="Engineering highlights">
 
-- Built financial reconciliation workflows used daily by 50–100 people, processing tens of thousands of fund records a day.
-- Re-architected asynchronous reporting with audit logging and execution throttling.
-- Delivered multi-tenant API security improvements and cross-platform integrations.
+<img src="assets/readme/highlight-reconciliation.svg" width="270" alt="Enterprise reconciliation: 50–100 daily users, high-volume financial data"> <img src="assets/readme/highlight-reporting.svg" width="270" alt="Reporting architecture: async execution, audit logging, job throttling"> <img src="assets/readme/highlight-tenancy.svg" width="270" alt="Multi-tenant systems: API security, client isolation, integrations">
 
 ## <img src="assets/readme/tab-build.svg" width="410" alt="What I build">
 
@@ -18,7 +16,7 @@ Outside of work, I build independent products and explore AI-assisted engineerin
 
 ## <img src="assets/readme/tab-projects.svg" width="410" alt="Selected projects">
 
-<img src="assets/readme/card-trace.svg" width="410" alt="TRACE, an AI engineering intelligence platform, in development. A platform for understanding repositories and investigating issues with evidence. Planned: code search, GitHub integration and AI evaluation."> <a href="https://reverieoffear.com"><img src="assets/readme/card-reverie.svg" width="410" alt="Reverie of Fear, a co-op horror deck-building game, in development. An original game I'm developing. One to five players take on 80s slasher archetypes against a Slasher that runs itself. reverieoffear.com"></a> <a href="https://imperialdeckregistry.com"><img src="assets/readme/card-registry.svg" width="410" alt="Imperial Deck Registry, a deck-building web app, live. A deck registry for Star Wars: Unlimited players, built with Next.js, TypeScript, PostgreSQL and Prisma. imperialdeckregistry.com"></a> <a href="https://github.com/SenpaiSumpie/Noir"><img src="assets/readme/card-noir.svg" width="410" alt="Noir, a VS Code theme, published. A black-and-white editor theme that uses color only where it matters. Published on the VS Code Marketplace. github.com/SenpaiSumpie/Noir"></a>
+<img src="assets/readme/card-trace.svg" width="410" alt="TRACE, an AI engineering intelligence platform, in development. Investigates software issues with evidence from the repository. Planned: code search and GitHub integration. Not public yet."> <a href="https://reverieoffear.com"><img src="assets/readme/card-reverie.svg" width="410" alt="Reverie of Fear, a co-op horror deck-builder, in development. An original game I'm developing. Up to five players face a Slasher that runs itself. reverieoffear.com"></a> <a href="https://imperialdeckregistry.com"><img src="assets/readme/card-registry.svg" width="410" alt="Imperial Deck Registry, deck building for Star Wars: Unlimited, live. A deck registry for the card game's players, built with Next.js, TypeScript, PostgreSQL and Prisma. imperialdeckregistry.com"></a> <a href="https://github.com/SenpaiSumpie/Noir"><img src="assets/readme/card-noir.svg" width="410" alt="Noir, a black-and-white theme for VS Code, published. Uses color only where it matters. Published on the VS Code Marketplace. github.com/SenpaiSumpie/Noir"></a>
 
 ## <img src="assets/readme/tab-tech.svg" width="410" alt="Technology stack">
 

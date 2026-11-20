@@ -296,35 +296,98 @@ def glyph_indie(c):
 
 
 def tile(title, text, glyph, accent, seed):
-    W, H = 410, 132
+    W, H = 410, 142
     css, art = glyph(accent)
     room = W - 104 - 20
     size = 15.5
     while DISPLAY.width(title, size, 0.1) > room:
         size -= 0.25
-    lines = BODY.wrap(text, 14.5, room)
+    lines = BODY.wrap(text, 15.5, room)
     defs = f'<radialGradient id="tint" cx="52" cy="52" r="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="{accent}" stop-opacity=".3"/><stop offset="1" stop-color="{accent}" stop-opacity="0"/></radialGradient>'
     body = (
-        f'<g transform="translate(0,14)"><rect x="20" y="20" width="64" height="64" rx="11" fill="{WELL}"/>'
+        f'<g transform="translate(0,19)"><rect x="20" y="20" width="64" height="64" rx="11" fill="{WELL}"/>'
         f'<rect x="20" y="20" width="64" height="64" rx="11" fill="url(#tint)" stroke="{accent}" stroke-opacity=".4"/>{art}</g>'
-        + DISPLAY.path(title, 104, 44, size, TEXT, track=0.1)
-        + "".join(BODY.path(l, 104, 70 + i * 21, 14.5, BODY_INK) for i, l in enumerate(lines))
+        + DISPLAY.path(title, 104, 45, size, TEXT, track=0.1)
+        + "".join(BODY.path(l, 104, 72 + i * 22.5, 15.5, BODY_INK) for i, l in enumerate(lines))
     )
     return panel(W, H, f"{title}: {text}", css, defs, body, stars=seed)
+
+
+# --- engineering highlights -------------------------------------------------
+
+def glyph_reconcile(c):
+    rows = ""
+    for i, y in enumerate((36, 52, 68)):
+        odd = i == 2
+        tone = PINK if odd else c
+        cls = ' class="odd"' if odd else ""
+        rows += (
+            f'<path d="M38,{y} L66,{y}" stroke="{tone}" stroke-opacity=".5" stroke-width="1.5"{" stroke-dasharray=\'3 3\'" if odd else ""}/>'
+            f'<circle{cls} cx="36" cy="{y}" r="4" fill="{RAISED}" stroke="{tone}" stroke-width="1.5"/>'
+            f'<circle{cls} cx="68" cy="{y}" r="4" fill="{tone}"/>'
+        )
+    return ".odd{animation:odd 2.8s ease-in-out infinite}@keyframes odd{50%{opacity:.3}}", rows
+
+
+def glyph_reporting(c):
+    bars = "".join(
+        f'<rect class="bar" x="{x}" y="{70 - h}" width="9" height="{h}" rx="2" fill="{c}" style="animation-delay:{i * .5}s"/>'
+        for i, (x, h) in enumerate([(33, 16), (47.5, 30), (62, 22)])
+    )
+    css = ".bar{opacity:.4;animation:bar 4s ease-in-out infinite}@keyframes bar{0%,45%,100%{opacity:.4}15%,30%{opacity:1}}"
+    return css, bars + f'<rect x="30" y="71.5" width="44" height="1.5" rx=".75" fill="{c}" opacity=".5"/>'
+
+
+def glyph_tenants(c):
+    boxes = "".join(
+        f'<rect class="tn" x="{x}" y="56" width="13" height="13" rx="3" fill="{RAISED}" stroke="{c}" stroke-width="1.5" style="animation-delay:{i * .8}s"/>'
+        for i, x in enumerate((29.5, 45.5, 61.5))
+    )
+    lock = (
+        f'<path d="M46,44 V40 a6,6 0 0 1 12,0 V44" fill="none" stroke="{c}" stroke-width="1.5"/>'
+        f'<rect x="43" y="43" width="18" height="9" rx="2.5" fill="{c}"/>'
+    )
+    css = f".tn{{animation:tn 4.8s ease-in-out infinite}}@keyframes tn{{0%,30%,100%{{fill:{RAISED}}}10%,20%{{fill:{c}}}}}"
+    return css, lock + boxes
+
+
+def highlight(title, points, glyph, accent, seed, height):
+    W = 270
+    css, art = glyph(accent)
+    room = W - 40
+    size = 15.0
+    while DISPLAY.width(title, size, 0.1) > room:
+        size -= 0.25
+    defs = f'<radialGradient id="tint" cx="43" cy="43" r="34" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="{accent}" stop-opacity=".3"/><stop offset="1" stop-color="{accent}" stop-opacity="0"/></radialGradient>'
+    rows, y = "", 122
+    for point in points:
+        for i, line in enumerate(BODY.wrap(point, 15, room - 16)):
+            if i == 0:
+                rows += f'<circle cx="23.5" cy="{y - 5}" r="2.4" fill="{accent}"/>'
+            rows += BODY.path(line, 36, y, 15, BODY_INK)
+            y += 21
+        y += 5
+    body = (
+        f'<rect x="20" y="20" width="46" height="46" rx="10" fill="{WELL}"/>'
+        f'<rect x="20" y="20" width="46" height="46" rx="10" fill="url(#tint)" stroke="{accent}" stroke-opacity=".4"/>'
+        f'<g transform="translate(5.56,5.56) scale(.72)">{art}</g>'
+        + DISPLAY.path(title, 20, 95, size, TEXT, track=0.1) + rows
+    )
+    return panel(W, height or int(y + 8), f"{title}: {'; '.join(points)}", css, defs, body, stars=seed), int(y + 8)
 
 
 # --- project cards ----------------------------------------------------------
 # One system for every project: a metadata strip, a 104px scene under a shared
 # tint, then title, one-line descriptor, explanation and a footer link.
 
-STRIP, SCENE = 32, 104
+STRIP, SCENE = 36, 104
 
 
 def card(title, category, descriptor, desc, art, status, live=False, link=None, seed=0):
-    W, H = 410, 334
+    W, H = 410, 384
     css, defs, scene = art
     top = STRIP + SCENE
-    lines = BODY.wrap(desc, 15.5, W - 48)
+    lines = BODY.wrap(desc, 16.5, W - 48)
     assert len(lines) <= 3, (title, lines)
     css = ".dot{animation:dot 2.6s ease-in-out infinite}@keyframes dot{50%{opacity:.3}}\n" + css
     defs += (
@@ -334,21 +397,21 @@ def card(title, category, descriptor, desc, art, status, live=False, link=None, 
     dot = CYAN if live else PINK
     body = (
         f'<rect width="{W}" height="{STRIP}" fill="{WELL}"/>'
-        f'<circle cx="26" cy="16" r="6.5" fill="{dot}" opacity=".2"/><circle class="dot" cx="26" cy="16" r="3.4" fill="{dot}"/>'
-        + BODY_B.path(status, 39, 20.4, 12.5, TEXT)
-        + BODY.path(category, W - 22 - BODY.width(category, 12.5), 20.4, 12.5, FAINT)
+        f'<circle cx="27" cy="18" r="7" fill="{dot}" opacity=".2"/><circle class="dot" cx="27" cy="18" r="3.6" fill="{dot}"/>'
+        + BODY_B.path(status, 41, 22.8, 13.5, TEXT)
+        + BODY.path(category, W - 24 - BODY.width(category, 13.5), 22.8, 13.5, FAINT)
         + f'<g transform="translate(0,{STRIP})"><g clip-path="url(#band)">{scene}'
         f'<rect width="{W}" height="{SCENE}" fill="{VIOLET}" opacity=".07"/><rect width="{W}" height="{SCENE}" fill="url(#fade)"/></g></g>'
         f'<rect y="{STRIP - .5}" width="{W}" height="1" fill="#000" opacity=".4"/>'
-        + DISPLAY.path(title, 24, top + 40, 23, TEXT, track=0.2)
-        + BODY_B.path(descriptor, 24, top + 64, 14.5, SOFT)
-        + "".join(BODY.path(l, 24, top + 94 + i * 23, 15.5, BODY_INK) for i, l in enumerate(lines))
+        + DISPLAY.path(title, 24, top + 50, 23, TEXT, track=0.2)
+        + BODY_B.path(descriptor, 24, top + 76, 15, SOFT)
+        + "".join(BODY.path(l, 24, top + 112 + i * 25.5, 16.5, BODY_INK) for i, l in enumerate(lines))
     )
-    foot = H - 26
+    foot = H - 30
     if link:
-        body += BODY_B.path(link, 24, foot, 14, CYAN)
+        body += BODY_B.path(link, 24, foot, 15, CYAN)
     else:
-        body += BODY.path("Not public yet", 24, foot, 14, FAINT)
+        body += BODY.path("Not public yet", 24, foot, 15, FAINT)
     return panel(W, H, f"{title}, {descriptor}. {status}.", css, defs, body, stars=seed)
 
 
@@ -486,7 +549,7 @@ def noir_art():
 
 # --- technology panels ------------------------------------------------------
 
-PILL_H, PILL_SIZE = 32, 13.5
+PILL_H, PILL_SIZE = 35, 14.5
 
 
 def tech_layout(items, w, top):
@@ -502,18 +565,18 @@ def tech_layout(items, w, top):
 
 def tech(title, items, strong, height, seed, note=None):
     W = 270
-    top = 78 if note else 56
+    top = 82 if note else 58
     placed, _ = tech_layout(items, W, top)
     fill, stroke, so = (RAISED, VIOLET, ".75") if strong else ("#1E1530", "#8B6CF0", ".3")
     pills = "".join(
         f'<g class="pl" style="animation-delay:{i * .3:.1f}s"><rect x="{x:.0f}" y="{y}" width="{pw:.0f}" height="{PILL_H}" rx="{PILL_H / 2}" fill="{fill}" stroke="{stroke}" stroke-opacity="{so}"/>'
-        + BODY_B.path(name, x + 14, y + 20.8, PILL_SIZE, TEXT) + "</g>"
+        + BODY_B.path(name, x + 14, y + 22.6, PILL_SIZE, TEXT) + "</g>"
         for i, (name, x, y, pw) in enumerate(placed)
     )
     css = ".pl{opacity:.86;animation:pl 6s ease-in-out infinite}@keyframes pl{0%,22%,100%{opacity:.86}9%{opacity:1}}\n@media (prefers-reduced-motion: reduce){.pl{opacity:1}}"
-    body = DISPLAY.path(title, 16, 35, 14.5, TEXT, track=0.1) + pills
+    body = DISPLAY.path(title, 16, 36, 15, TEXT, track=0.1) + pills
     if note:
-        body += BODY.path(note, 16, 58, 13.5, FAINT)
+        body += BODY.path(note, 16, 60, 14.5, FAINT)
     label = f"{title} ({note.lower()}): " if note else f"{title}: "
     return panel(W, height, label + ", ".join(items), css, "", body, stars=seed)
 
@@ -534,6 +597,11 @@ TILES = {
     "tile-ai": ("AI integration & workflows", "Assistant features that answer questions and drive existing application workflows.", glyph_ai, PINK),
     "tile-indie": ("Independent software & games", "Original products and games I design and build on my own time.", glyph_indie, EMBER),
 }
+HIGHLIGHTS = {
+    "highlight-reconciliation": ("Enterprise reconciliation", ["50\u2013100 daily users", "High-volume financial data"], glyph_reconcile, CYAN),
+    "highlight-reporting": ("Reporting architecture", ["Async execution", "Audit logging", "Job throttling"], glyph_reporting, VIOLET),
+    "highlight-tenancy": ("Multi-tenant systems", ["API security", "Client isolation", "Integrations"], glyph_tenants, PINK),
+}
 PRIMARY = ["C#", "ASP.NET Core", "SQL Server", "Angular", "TypeScript", "REST APIs"]
 ADDITIONAL = ["React", "Next.js", "Node.js", "PostgreSQL", "RabbitMQ", "Azure DevOps", "xUnit", "Jasmine"]
 AI = ["Tool calling", "Retrieval", "Evaluation", "Orchestration"]
@@ -544,13 +612,16 @@ def build():
     files = {"header": header()}
     files.update({name: tab(title) for name, title in TABS.items()})
     files.update({name: tile(t, text, g, accent, i) for i, (name, (t, text, g, accent)) in enumerate(TILES.items())})
+    tallest = max(highlight(t, pts, g, a, 0, None)[1] for t, pts, g, a in HIGHLIGHTS.values())
+    for i, (name, (t, pts, g, a)) in enumerate(HIGHLIGHTS.items()):
+        files[name] = highlight(t, pts, g, a, 50 + i, tallest)[0]
     files["card-trace"] = card(
         "TRACE", "Developer tool", "AI engineering intelligence platform",
-        "For understanding repositories and investigating issues with evidence. Planned: code search, GitHub integration and AI evaluation.",
+        "Investigates software issues with evidence from the repository. Planned: code search and GitHub integration.",
         trace_art(), "In development", seed=31)
     files["card-reverie"] = card(
         "Reverie of Fear", "Game", "Co-op horror deck-builder",
-        "An original game I'm developing. One to five players take on 80s slasher archetypes against a Slasher that runs itself.",
+        "An original game I'm developing. Up to five players face a Slasher that runs itself.",
         reverie_art(), "In development", link="reverieoffear.com", seed=32)
     files["card-registry"] = card(
         "Imperial Deck Registry", "Web app", "Deck building for Star Wars: Unlimited",
@@ -565,7 +636,7 @@ def build():
         ("tech-additional", "Additional experience", ADDITIONAL, False, None),
         ("tech-ai", "AI engineering", AI, False, AI_NOTE),
     ]
-    tech_h = max(tech_layout(items, 270, 78 if note else 56)[1] for _, _, items, _, note in panels)
+    tech_h = max(tech_layout(items, 270, 82 if note else 58)[1] for _, _, items, _, note in panels)
     for i, (name, title, items, strong, note) in enumerate(panels):
         files[name] = tech(title, items, strong, tech_h, 40 + i, note)
 
